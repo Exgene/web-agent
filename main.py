@@ -65,9 +65,12 @@ class PlaywrightInstance:
 
     async def run(self):
         assert self.browser, "INTITIALZE THE PLAYWRIGHT INSTANCE"
-        page = await self.browser.new_page()
-        await page.goto("https://kausthubh.com")
-        content = await page.content()
+
+        async with await self.browser.new_page() as page:
+            await page.goto("https://kausthubh.com")
+            await page.content()
+            content = await page.evaluate("document.body.innerText")
+
         print(content)
         await asyncio.sleep(4)
 
