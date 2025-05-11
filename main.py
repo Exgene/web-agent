@@ -7,7 +7,6 @@ import dotenv
 from langchain_groq import ChatGroq
 from playwright.async_api import (
     BrowserContext,
-    Page,
     Playwright,
     ProxySettings,
     async_playwright,
@@ -29,7 +28,6 @@ class PlaywrightInstance:
         self.playwright: Optional[Playwright]
         self.browser: Optional[BrowserContext]
         self.user_data_dir: Path = Path("./user_data_dir")
-        self.page: Optional[Page]
         self.headless = headless
 
     async def __aenter__(self):
@@ -38,14 +36,7 @@ class PlaywrightInstance:
 
     async def __aexit__(self, exc_t, exc_v, exc_tb):
         print("Cleaning up resources...")
-        print(self.page)
-        print(self.browser)
         try:
-            if self.page:
-                await self.page.close()
-                print("Closed Page")
-                self.page = None
-
             if self.browser:
                 await self.browser.close()
                 print("closed browser")
@@ -72,11 +63,12 @@ class PlaywrightInstance:
             headless=self.headless,
         )
 
-        self.page = await self.browser.new_page()
-
     async def run(self):
         assert self.browser, "INTITIALZE THE PLAYWRIGHT INSTANCE"
-        await self.page.goto("https://kausthubh.com")
+        page = await self.browser.new_page()
+        await page.goto("https://kausthubh.com")
+        content = await page.content()
+        print(content)
         await asyncio.sleep(4)
 
 
