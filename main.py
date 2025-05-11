@@ -1,12 +1,22 @@
-from playwright.sync_api import sync_playwright
+import os
+
+import dotenv
+from langchain_groq import ChatGroq
+
+dotenv.load_dotenv(".env")
+
+if "GROQ_API_KEY" not in os.environ:
+    assert "MISSING API KEYS"
+
 
 def main():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        page = browser.new_page()
-        page.goto("https://www.google.com")
-        print("Page title:", page.title())
-        browser.close()
+    llm = ChatGroq(
+        model="llama-3.1-8b-instant",
+    )
+
+    res = llm.invoke(input="hello")
+    print(res)
+
 
 if __name__ == "__main__":
     main()
