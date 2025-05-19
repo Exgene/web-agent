@@ -1,5 +1,6 @@
 import asyncio
 import os
+from logging import INFO
 from pathlib import Path
 from typing import Optional
 
@@ -12,7 +13,12 @@ from playwright.async_api import (
     async_playwright,
 )
 
+from logger.logger import get_logger, setup_logger
+
 dotenv.load_dotenv(".env")
+
+setup_logger("main", INFO)
+logger = get_logger("main")
 
 if "GROQ_API_KEY" not in os.environ:
     assert "MISSING API KEYS"
@@ -35,20 +41,20 @@ class PlaywrightInstance:
         return self
 
     async def __aexit__(self, exc_t, exc_v, exc_tb):
-        print("Cleaning up resources...")
+        logger.info("Cleaning up resources...")
         try:
             if self.browser:
                 await self.browser.close()
-                print("closed browser")
+                logger.debug("closed browser")
                 self.browser = None
 
             if self.playwright:
                 await self.playwright.stop()
-                print("stopped playwright")
+                logger.debug("stopped playwright")
                 self.playwright = None
 
         except Exception as e:
-            print(f"Error during cleanup: {e}")
+            logger.error(f"Error during cleanup: {e}")
 
         return False
 
@@ -57,21 +63,21 @@ class PlaywrightInstance:
         proxy = proxies[0]
 
         chromium = self.playwright.chromium
-        print(self.user_data_dir)
+        logger.debug("User Data Directory:", self.user_data_dir)
         self.browser = await chromium.launch_persistent_context(
             user_data_dir="./user_data_dir",
             headless=self.headless,
         )
+        logger.info("Successfully initialized browser")
 
     async def run(self):
         assert self.browser, "INTITIALZE THE PLAYWRIGHT INSTANCE"
 
         async with await self.browser.new_page() as page:
             await page.goto("https://kausthubh.com")
-            await page.content()
-            content = await page.evaluate("document.body.innerText")
-
-        print(content)
+            content = await page.content()
+            print(content)
+            # logger.info("Content from the page:", content)
         await asyncio.sleep(4)
 
 
@@ -82,6 +88,7 @@ async def main():
 
     res = llm.invoke(input="hello")
     print(res)
+    # logger.info("res:", res)
     async with PlaywrightInstance(headless=False) as p:
         await p.run()
 

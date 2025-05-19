@@ -1,6 +1,5 @@
 from logging import INFO, Formatter, StreamHandler, getLogger
 
-
 def setup_logger(name: str, level: int = INFO) -> None:
     """
     Set up a logger with the specified name and level.
