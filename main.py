@@ -1,4 +1,4 @@
-import asyncio
+import json
 from logging import INFO
 from pathlib import Path
 from typing import Optional
@@ -10,6 +10,7 @@ from playwright.async_api import (
     async_playwright,
 )
 
+from src.agents.task_separator import TaskSeperatorAgent
 from src.clients.groq import GroqClient
 from src.logger.logger import get_logger, setup_logger
 from src.tool_calls.web_tools import WebTools
@@ -66,21 +67,13 @@ class PlaywrightInstance:
 
     async def run(self):
         assert self.browser, "INITIALIZE THE PLAYWRIGHT INSTANCE"
-        llm = GroqClient().create_client()
 
         async with await self.browser.new_page() as page:
             tools = WebTools(page)
-            if await tools.check_for_captcha(llm):
-                logger.info("CAPTCHA detected. Waiting for user instruction.")
-                return
-
             await tools.search_url("https://www.google.com")
             await tools.type_text(text="Kausthubh J Rao")
-            content = await tools.get_page_content()
-            llm_response = llm.invoke(
-                input=f"Out of these select the one which seems most likely to be a portfolio website: {content[:1000]}, Return its link"
-            )
-            await tools.search_url(llm_response.content.strip())
+            # You will probably never use it like this
+            # await tools.search_url(llm_response.content.strip())
 
 
 async def main():
@@ -89,4 +82,23 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    llm, model = GroqClient().create_sync_client()
+    llm_response = llm.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant.",
+            },
+            {
+                "role": "user",
+                "content": "Explain the importance of low latency LLMs",
+            },
+        ],
+    )
+    logger.info(llm_response)
+
+    agent = TaskSeperatorAgent(llm=llm)
+    logger.info(json.dumps(agent.tool_calls, indent=2))
+    # logger.info(agent.tool_calls)
+# asyncio.run(main())
