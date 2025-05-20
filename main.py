@@ -14,6 +14,7 @@ from playwright.async_api import (
 )
 
 from logger.logger import get_logger, setup_logger
+from tool_calls.web_tools import WebTools
 
 dotenv.load_dotenv(".env")
 
@@ -71,24 +72,25 @@ class PlaywrightInstance:
         logger.info("Successfully initialized browser")
 
     async def run(self):
-        assert self.browser, "INTITIALZE THE PLAYWRIGHT INSTANCE"
+        assert self.browser, "INITIALIZE THE PLAYWRIGHT INSTANCE"
+        llm = ChatGroq(
+            model="llama-3.1-8b-instant",
+        )
 
         async with await self.browser.new_page() as page:
-            await page.goto("https://kausthubh.com")
-            content = await page.content()
-            print(content)
-            # logger.info("Content from the page:", content)
-        await asyncio.sleep(4)
+            tools = WebTools(page)
+            if (await tools.check_for_captcha(llm)):
+                logger.info("CAPTCHA detected. Waiting for user instruction.")
+                return
+            
+            await tools.search_url("https://www.google.com")
+            await tools.type_text(text="Kausthubh J Rao")
+            content = await tools.get_page_content()
+            llm_response = llm.invoke(input=f"Out of these select the one which seems most likely to be a portfolio website: {content[:1000]}, Return its link")
+            await tools.search_url(llm_response.content.strip())
 
 
 async def main():
-    llm = ChatGroq(
-        model="llama-3.1-8b-instant",
-    )
-
-    res = llm.invoke(input="hello")
-    print(res)
-    # logger.info("res:", res)
     async with PlaywrightInstance(headless=False) as p:
         await p.run()
 

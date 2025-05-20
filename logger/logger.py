@@ -1,5 +1,6 @@
 from logging import INFO, Formatter, StreamHandler, getLogger
 
+
 def setup_logger(name: str, level: int = INFO) -> None:
     """
     Set up a logger with the specified name and level.
@@ -14,7 +15,9 @@ def setup_logger(name: str, level: int = INFO) -> None:
     ch = StreamHandler()
     ch.setLevel(level)
 
-    formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(funcName)s] - %(message)s"
+    )
     ch.setFormatter(formatter)
 
     logger.addHandler(ch)
