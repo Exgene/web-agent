@@ -1,4 +1,4 @@
 *.env
 user_data_dir
-__pycache__/
+**/__pycache__
 *.py[cod]

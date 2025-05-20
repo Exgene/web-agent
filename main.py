@@ -83,22 +83,28 @@ async def main():
 
 if __name__ == "__main__":
     llm, model = GroqClient().create_sync_client()
-    llm_response = llm.chat.completions.create(
-        model=model,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a helpful assistant.",
-            },
-            {
-                "role": "user",
-                "content": "Explain the importance of low latency LLMs",
-            },
-        ],
-    )
-    logger.info(llm_response)
+    # llm_response = llm.chat.completions.create(
+    #     model=model,
+    #     messages=[
+    #         {
+    #             "role": "system",
+    #             "content": "You are a helpful assistant.",
+    #         },
+    #         {
+    #             "role": "user",
+    #             "content": "Explain the importance of low latency LLMs",
+    #         },
+    #     ],
+    # )
+    # logger.info(llm_response)
 
-    agent = TaskSeperatorAgent(llm=llm)
+    agent = TaskSeperatorAgent(
+        llm=llm,
+        input="Navigate to kausthubh j rao and analyze the content",
+        model=model,
+    )
+    logger.info(agent.system_prompt)
     logger.info(json.dumps(agent.tool_calls, indent=2))
+    logger.info("Output from agent separate::", agent.run())
     # logger.info(agent.tool_calls)
 # asyncio.run(main())

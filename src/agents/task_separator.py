@@ -1,24 +1,67 @@
+import json
 from dataclasses import dataclass, field
 
 from src.agents.base import BaseAgent, LLMType
+from src.logger.logger import get_logger
 from src.tool_calls.web_tools import WebTools
 from src.utils.tool_calls import generate_json_from_tool_calls
 
 SYSTEM_PROMPT = """
 
+You are a task separating agent, Given the input string 
+
+{input}
+
+You are going to divide it into single set of actions that you will return as array of objects.
+
+You will be given set of tool_calls, You must only use those and come up with steps for that.
+
+{tool_calls}
+
+You will just return what tool calls can you call from it.
+
+Your Responses will be like : 
+  [
+      {{
+          "task": "search_url",
+          "reason": "..."
+      }}
+  ]
+
+At the end add a task called completed to say you have finished all the tasks
 """
+
+logger = get_logger("base_agent")
 
 
 @dataclass
 class TaskSeperatorAgent(BaseAgent):
+    model: str = ""
     input: str = ""
+    memory: str = ""
     system_prompt: str = field(init=False)
     llm: LLMType = None
     tool_calls: list[dict] = field(default_factory=list)
 
     def __post_init__(self):
-        self.system_prompt = SYSTEM_PROMPT
         self.tool_calls = generate_json_from_tool_calls(WebTools)
+        self.system_prompt = SYSTEM_PROMPT.format(
+            input=self.input, tool_calls=json.dumps(self.tool_calls)
+        )
+        logger.info("Set system prompt for TaskSeperatorAgent", self.system_prompt)
 
     def run(self):
-        pass
+        assert self.llm, "Some mistake while passing the client"
+        return self.llm.chat.completions.create(
+            model=self.model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": self.system_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": self.input,
+                },
+            ],
+        )
