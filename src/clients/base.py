@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Union
 
-from langchain_groq import ChatGroq
+from groq import Groq
 
-type ReturningClients = Union[ChatGroq, None]
+type ReturningClients = Union[Groq, None]
 
 
 class BaseClient(ABC):

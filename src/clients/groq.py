@@ -2,7 +2,7 @@ import os
 from logging import INFO
 
 import dotenv
-from langchain_groq import ChatGroq
+from groq import Groq
 
 from src.clients.base import BaseClient
 from src.logger.logger import get_logger, setup_logger
@@ -20,8 +20,8 @@ class GroqClient(BaseClient):
     def __init__(self):
         self.llm = None
 
-    def create_client(self) -> ChatGroq:
-        self.llm = ChatGroq(
+    def create_client(self) -> Groq:
+        self.llm = Groq(
             model="llama-3.1-8b-instant",
         )
         logger.debug("Successfully created Groq Client")
