@@ -1,14 +1,23 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Union
+from typing import Tuple, Union
 
-from groq import Groq
+from groq import AsyncGroq, Groq
 
-type GroqClient = Dict[str, Groq | str]
+type SyncGroqReturnType = Tuple[Groq, str]
+type AsyncGroqReturnType = Tuple[AsyncGroq, str]
 
-type ReturningClients = Union[GroqClient, None]
+type SyncClientReturnTypes = Union[SyncGroqReturnType, None]
+type AsyncClientReturnTypes = Union[AsyncGroqReturnType, None]
+
+type SyncClientTypes = Union[Groq, None]
+type AsyncClientTypes = Union[AsyncGroq, None]
 
 
 class BaseClient(ABC):
     @abstractmethod
-    def create_client(self) -> ReturningClients:
+    def create_sync_client(self) -> SyncClientReturnTypes:
+        pass
+
+    @abstractmethod
+    def create_async_client(self) -> AsyncClientReturnTypes:
         pass
