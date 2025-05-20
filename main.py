@@ -1,11 +1,8 @@
 import asyncio
-import os
 from logging import INFO
 from pathlib import Path
 from typing import Optional
 
-import dotenv
-from langchain_groq import ChatGroq
 from playwright.async_api import (
     BrowserContext,
     Playwright,
@@ -13,16 +10,12 @@ from playwright.async_api import (
     async_playwright,
 )
 
-from logger.logger import get_logger, setup_logger
-from tool_calls.web_tools import WebTools
-
-dotenv.load_dotenv(".env")
+from src.clients.groq import GroqClient
+from src.logger.logger import get_logger, setup_logger
+from src.tool_calls.web_tools import WebTools
 
 setup_logger("main", INFO)
 logger = get_logger("main")
-
-if "GROQ_API_KEY" not in os.environ:
-    assert "MISSING API KEYS"
 
 proxies: list[ProxySettings] = [
     {"server": "", "username": "", "password": ""},
@@ -73,20 +66,20 @@ class PlaywrightInstance:
 
     async def run(self):
         assert self.browser, "INITIALIZE THE PLAYWRIGHT INSTANCE"
-        llm = ChatGroq(
-            model="llama-3.1-8b-instant",
-        )
+        llm = GroqClient().create_client()
 
         async with await self.browser.new_page() as page:
             tools = WebTools(page)
-            if (await tools.check_for_captcha(llm)):
+            if await tools.check_for_captcha(llm):
                 logger.info("CAPTCHA detected. Waiting for user instruction.")
                 return
-            
+
             await tools.search_url("https://www.google.com")
             await tools.type_text(text="Kausthubh J Rao")
             content = await tools.get_page_content()
-            llm_response = llm.invoke(input=f"Out of these select the one which seems most likely to be a portfolio website: {content[:1000]}, Return its link")
+            llm_response = llm.invoke(
+                input=f"Out of these select the one which seems most likely to be a portfolio website: {content[:1000]}, Return its link"
+            )
             await tools.search_url(llm_response.content.strip())
 
 
