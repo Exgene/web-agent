@@ -1,18 +1,17 @@
 import os
 from logging import INFO
 
-import dotenv
 from groq import Groq
 
 from src.clients.base import BaseClient
+from src.clients.base import GroqClient as GroqReturnType
 from src.logger.logger import get_logger, setup_logger
 
-dotenv.load_dotenv(".env")
 setup_logger("groq_client", INFO)
 logger = get_logger("groq_client")
+API_KEY = os.environ.get("GROQ_API_KEY")
 
-
-if "GROQ_API_KEY" not in os.environ:
+if not API_KEY:
     assert "MISSING API KEYS"
 
 
@@ -20,9 +19,10 @@ class GroqClient(BaseClient):
     def __init__(self):
         self.llm = None
 
-    def create_client(self) -> Groq:
+    def create_client(self) -> GroqReturnType:
         self.llm = Groq(
-            model="llama-3.1-8b-instant",
+            api_key=API_KEY,
         )
         logger.debug("Successfully created Groq Client")
-        return self.llm
+        model = "llama3-8b-8192"
+        return {"llm": self.llm, "model": model}

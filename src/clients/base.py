@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Dict, Union
 
 from groq import Groq
 
-type ReturningClients = Union[Groq, None]
+type GroqClient = Dict[str, Groq | str]
+
+type ReturningClients = Union[GroqClient, None]
 
 
 class BaseClient(ABC):
