@@ -1,10 +1,9 @@
 from logging import INFO
 from typing import Optional
 
-from langchain_groq import ChatGroq
 from playwright.async_api import Page
 
-from logger.logger import get_logger, setup_logger
+from src.logger.logger import get_logger, setup_logger
 
 setup_logger("web_tools", INFO)
 logger = get_logger("web_tools")
@@ -40,23 +39,22 @@ class WebTools:
         await self.page.wait_for_selector(selector, timeout=timeout)
 
     # Not sure if i need this or not, Lets see
-    async def check_for_captcha(self, llm: ChatGroq) -> bool:
-        """Check if there's a captcha on the page"""
-        content = await self.get_page_content()
-        is_captcha = llm.invoke(
-            input=f"Is there a captcha on the page? {content}, Only return True or False"
-        )
-        if type(is_captcha.content) is str:
-            print(is_captcha.content.strip())
-            return is_captcha.content.strip() == "True"
-
-        logger.error("Couldnt parse the string ::", is_captcha.content)
-        return False
-
+    # async def check_for_captcha(self, llm: ChatGroq) -> bool:
+    #     """Check if there's a captcha on the page"""
+    #     content = await self.get_page_content()
+    #     is_captcha = llm.invoke(
+    #         input=f"Is there a captcha on the page? {content}, Only return True or False"
+    #     )
+    #     if type(is_captcha.content) is str:
+    #         print(is_captcha.content.strip())
+    #         return is_captcha.content.strip() == "True"
+    #
+    #     logger.error("Couldnt parse the string ::", is_captcha.content)
+    #     return False
+    #
     async def get_element_text(self, selector: str) -> Optional[str]:
         """Get text content of an element"""
         element = await self.page.query_selector(selector)
         if element:
             return await element.text_content()
         return None
-
