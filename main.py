@@ -1,4 +1,3 @@
-import json
 from logging import INFO
 from pathlib import Path
 from typing import Optional
@@ -103,8 +102,9 @@ if __name__ == "__main__":
         input="Navigate to kausthubh j rao and analyze the content",
         model=model,
     )
-    logger.info(agent.system_prompt)
-    logger.info(json.dumps(agent.tool_calls, indent=2))
-    logger.info("Output from agent separate::", agent.run())
+    _ = agent.run()
+    # logger.info(agent.system_prompt)
+    # logger.info(json.dumps(agent.tool_calls, indent=2))
+    # logger.info(f"Output from agent separate: {agent.run()}")
     # logger.info(agent.tool_calls)
 # asyncio.run(main())

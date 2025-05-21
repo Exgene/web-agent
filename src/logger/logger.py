@@ -1,5 +1,19 @@
 from logging import INFO, Formatter, StreamHandler, getLogger
 from typing import Dict, Optional
+import json
+
+
+class JsonFormatter(Formatter):
+    def format(self, record):
+        try:
+            if isinstance(record.msg, str):
+                json_obj = json.loads(record.msg)
+                record.msg = json.dumps(json_obj, indent=2)
+            elif isinstance(record.msg, (dict, list)):
+                record.msg = json.dumps(record.msg, indent=2)
+        except (json.JSONDecodeError, TypeError):
+            pass
+        return super().format(record)
 
 
 class LoggerManager:
@@ -21,7 +35,7 @@ class LoggerManager:
         ch = StreamHandler()
         ch.setLevel(level)
 
-        formatter = Formatter(
+        formatter = JsonFormatter(
             "%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(funcName)s] - %(message)s"
         )
         ch.setFormatter(formatter)
