@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from types import CoroutineType
 from typing import Any, Union
 
 from groq.types.chat import ChatCompletion
@@ -9,8 +8,7 @@ from src.clients.base import AsyncClientTypes, SyncClientTypes
 from src.logger.logger import setup_logger
 
 type LLMType = Union[AsyncClientTypes, SyncClientTypes]
-type SyncAgentReturnType = Union[ChatCompletion, None]
-type AsyncAgentReturnType = Union[CoroutineType[Any, Any, ChatCompletion], None]
+type AgentReturnType = Union[ChatCompletion, None]
 
 setup_logger("agent_base")
 
@@ -24,9 +22,9 @@ class BaseAgent(ABC):
     outputs: list[dict[str, Any]]
 
     @abstractmethod
-    def run(self) -> SyncAgentReturnType:
+    def run(self) -> AgentReturnType:
         pass
 
     @abstractmethod
-    async def async_run(self) -> AsyncAgentReturnType:
+    async def async_run(self) -> AgentReturnType:
         pass
